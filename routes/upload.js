@@ -10,6 +10,7 @@ const router = express.Router();
 
 const process_dir = "./processed_file/";
 const upload_DIR = "./uploads/";
+const json_dir = "./json/"
 
 var default_trigger_list = [
     "because of",
@@ -40,7 +41,7 @@ var default_trigger_list = [
 ]
 let word = "trigger";
 let userName = 'Default';
-
+let arrayList = [];
 
 router.get("/download/:id", function (req, res) {
     if (req.params.id) {
@@ -114,7 +115,7 @@ router.post("/process", function (req, res) {
             src = upload_DIR + extension + "/" + src
             console.log(src)
             // var fileData = fs.readFileSync(src);
-
+            let new_file_name;
             pandoc(src, args, (err, result) => {
                 if (err) {
                     console.error(err);
@@ -126,11 +127,19 @@ router.post("/process", function (req, res) {
                             console.log("Trigger words array :" + default_trigger_list)
                             array.map((i, index) => {
                                 default_trigger_list.map((trigger_word, trigger_index) => {
-                                    if (i.indexOf(trigger_word) != -1) {
+                                    // .search(/\bfoo\b/)
+                                    var c = new RegExp('\\b' + trigger_word + '\\b');
+                                    if (i.search(c) != -1) {
+                                        // if (i.indexOf(trigger_word) != -1) {
                                         if (i.indexOf("&lt;causal-relation&gt") == -1) {
+                                            // let regexWord = `(\s|^)${trigger_word}(?=\s|$)`;
+                                            console.log("--------------", c)
+                                            i = i.replace(c, `<font style="color:purple;"> &lt;${word}&gt ${trigger_word} &lt/${word}&gt </font>`)
                                             i = '<font style="color:red;"> &lt;causal-relation&gt; </font>' + i + '<font style="color:red;"> &lt/causal-relation&gt </font>';
                                             i = '<font style="background-color:yellow;">' + i + " </font>";
-                                            array[index] = i.replace(trigger_word, `<font style="color:purple;"> &lt;${word}&gt ${trigger_word} &lt/${word}&gt </font>`);
+                                            // replace('','$1aaaa');
+                                            array[index] = i;
+                                            arrayList.push(i);
                                         }
                                     }
                                 })
@@ -141,26 +150,59 @@ router.post("/process", function (req, res) {
                             })
                         },
                         function (cb) {
-                            let ndata = array.join(". ").replace("< trigger>", "<trigger>");
-                            ndata = ndata.replace("< causal-relation>", "<causal-relation>");
-                            // TO convert Html format data into Word Docx format
-                            var docx = HtmlDocx.asBlob(ndata);
-                            fileName = `${process_dir}${src_file_name}_${userName}_${id}.docx`;
-                            // To write the data into a docx file
-                            fs.writeFile(fileName, docx, function (err) {
-                                if (err) {
-                                    console.log("-----------------", err);
-                                    cb(err)
-                                } else {
-                                    console.log('File is created');
-                                    cb(null, null);
-                                }
-                            });
+                            if (req.body.download) {
+                                let ndata = array.join(". ").replace("< trigger>", "<trigger>");
+                                ndata = ndata.replace("< causal-relation>", "<causal-relation>");
+                                // TO convert Html format data into Word Docx format
+                                var docx = HtmlDocx.asBlob(ndata);
+                                fileName = `${process_dir}${src_file_name}_${userName}_${id}.docx`;
+                                // To write the data into a docx file
+                                fs.writeFile(fileName, docx, function (err) {
+                                    if (err) {
+                                        console.log(fileName, "-----------------", err);
+                                        cb(err)
+                                    } else {
+                                        console.log(fileName, ' - File is created');
+                                        cb(null, null);
+                                    }
+                                });
+                            } else {
+                                cb(null, null);
+                            }
+
+                        },
+                        function (cb) {
+                            if (req.body.editable) {
+                                new_file_name = `${json_dir}${src_file_name}_${userName}_${id}.txt`;
+                                fs.writeFile(new_file_name, JSON.stringify(arrayList), function (err) {
+                                    if (err) {
+                                        console.log(new_file_name, "-----------------", err);
+                                        console.log('File is created');
+                                        cb(err)
+                                    } else {
+                                        console.log(new_file_name, ' - File is created');
+                                        cb(null, null);
+                                    }
+                                });
+                            } else {
+                                cb(null, null);
+                            }
+
                         }
                     ], function (err) {
                         // return result;
-                        if (err) res.status(400).json("!!!Something Went Wrong!")
-                        res.status(200).json({ "Message": "File Processed and saved", "FileName": fileName })
+                        if (err) {
+                            res.status(400).json("!!!Something Went Wrong!");
+                        } else {
+                            let obj = { "Message": "File Processed and saved" };
+                            if (req.body.editable) {
+                                obj["editableFileName"] = new_file_name;
+
+                            } else if (req.body.download) {
+                                obj["downloadFileName"] = fileName;
+                            }
+                            res.status(200).json(obj)
+                        }
                     })
                 }
             })
@@ -169,6 +211,28 @@ router.post("/process", function (req, res) {
         }
     } else {
         res.status(400).json("Something Went Wrong!")
+    }
+})
+
+router.get("/getAnnotateData/:id", function (req, res) {
+    console.log(req.params);
+    if (req.params) {
+        if (req.params.id) {
+
+            let src_file_name = "json/" + req.params.id + ".txt";
+            console.log()
+            fs.readFile(src_file_name, 'utf8', function (err, data) {
+
+                // Display the file content
+                console.log(data);
+                console.log(JSON.parse(data))
+                res.status(200).send({ data: JSON.parse(data) });
+            });
+        } else {
+            res.status(400).send("");
+        }
+    } else {
+        res.status(400).send("");
     }
 })
 
