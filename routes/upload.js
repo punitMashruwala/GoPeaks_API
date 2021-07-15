@@ -92,14 +92,12 @@ router.post("/upload", function (req, res) {
 });
 
 router.post("/process", function (req, res) {
-    console.log(req.body)
     if (req.body) {
         if (req.body.fileName) {
 
             let src_file_name = req.body.fileName.split(".")[0];
             let extension = req.body.fileName.split(".")[1];
             let args = `-f ${extension} -t html5`;
-            console.log("------------", args)
             let src = req.body.fileName;
             // res.send("Success")
             src_file_name = src_file_name.split("_")[0];
@@ -113,7 +111,6 @@ router.post("/process", function (req, res) {
             let array = [];
             let fileName;
             src = upload_DIR + extension + "/" + src
-            console.log(src)
             // var fileData = fs.readFileSync(src);
             let new_file_name;
             pandoc(src, args, (err, result) => {
@@ -133,7 +130,6 @@ router.post("/process", function (req, res) {
                                         // if (i.indexOf(trigger_word) != -1) {
                                         if (i.indexOf("&lt;causal-relation&gt") == -1) {
                                             // let regexWord = `(\s|^)${trigger_word}(?=\s|$)`;
-                                            console.log("--------------", c)
                                             i = i.replace(c, `<font style="color:purple;"> &lt;${word}&gt ${trigger_word} &lt/${word}&gt </font>`)
                                             i = '<font style="color:red;"> &lt;causal-relation&gt; </font>' + i + '<font style="color:red;"> &lt/causal-relation&gt </font>';
                                             i = '<font style="background-color:yellow;">' + i + " </font>";
@@ -162,7 +158,6 @@ router.post("/process", function (req, res) {
                                         console.log(fileName, "-----------------", err);
                                         cb(err)
                                     } else {
-                                        console.log(fileName, ' - File is created');
                                         cb(null, null);
                                     }
                                 });
@@ -177,10 +172,8 @@ router.post("/process", function (req, res) {
                                 fs.writeFile(new_file_name, JSON.stringify(arrayList), function (err) {
                                     if (err) {
                                         console.log(new_file_name, "-----------------", err);
-                                        console.log('File is created');
                                         cb(err)
                                     } else {
-                                        console.log(new_file_name, ' - File is created');
                                         cb(null, null);
                                     }
                                 });
@@ -215,17 +208,12 @@ router.post("/process", function (req, res) {
 })
 
 router.get("/getAnnotateData/:id", function (req, res) {
-    console.log(req.params);
     if (req.params) {
         if (req.params.id) {
 
             let src_file_name = "json/" + req.params.id + ".txt";
-            console.log()
             fs.readFile(src_file_name, 'utf8', function (err, data) {
-
                 // Display the file content
-                console.log(data);
-                console.log(JSON.parse(data))
                 res.status(200).send({ data: JSON.parse(data) });
             });
         } else {
