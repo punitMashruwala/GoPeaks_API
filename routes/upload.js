@@ -213,7 +213,7 @@ function processData(req, res, result, id, src_file_name) {
                                         }
                                         i = i.replace(c, ` <font style="color:purple;"> &lt;${word}&gt ${trigger_word} &lt/${word}&gt </font>`)
                                         i = '<font style="color:red;"> &lt;causal-relation&gt; </font> ' + i + ' <font style="color:red;"> &lt/causal-relation&gt </font>';
-                                        i = '<font style="background-color:yellow;"> ' + i + " </font>";
+                                        // i = '<font style="background-color:yellow;"> ' + i + " </font>";
                                         if (i.indexOf("<p>") == -1) {
                                             i = "<p> " + i + "</p> "
                                         }
@@ -230,7 +230,7 @@ function processData(req, res, result, id, src_file_name) {
                                     }
                                     i = i.replace(c, ` <font style="color:purple;"> &lt;${word}&gt ${trigger_word} &lt/${word}&gt </font>`)
                                     i = '<font style="color:red;"> &lt;causal-relation&gt; </font> ' + i + ' <font style="color:red;"> &lt/causal-relation&gt </font>';
-                                    i = '<font style="background-color:yellow;"> ' + i + " </font>";
+                                    // i = '<font style="background-color:yellow;"> ' + i + " </font>";
                                     if (i.indexOf("<p>") == -1) {
                                         i = "<p> " + i + "</p> "
                                     }
