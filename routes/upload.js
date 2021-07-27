@@ -44,6 +44,7 @@ let word = "trigger";
 let userName = 'Default';
 
 router.get("/download/:id", function (req, res) {
+    console.log("/download Api is called");
     if (req.params.id) {
         var name = req.params.id + ".docx";
         var fileData = fs.readFileSync(process_dir + name);
@@ -58,6 +59,7 @@ router.get("/download/:id", function (req, res) {
 
 
 router.post("/upload", function (req, res) {
+    console.log("/upload Api is called");
     req.headers["access-control-allow-origin"] = "*";
     console.log("In API")
     let file = (req.files);
@@ -97,6 +99,7 @@ router.post("/upload", function (req, res) {
 });
 
 router.post("/process", function (req, res) {
+    console.log("/process Api is called");
     if (req.body) {
         if (req.body.fileName) {
 
@@ -154,6 +157,7 @@ router.post("/process", function (req, res) {
 })
 
 router.get("/getAnnotateData/:id", function (req, res) {
+    console.log("/process Api is called by: ", req.ip);
     if (req.params) {
         if (req.params.id) {
 
