@@ -42,17 +42,20 @@ var default_trigger_list = [
 ]
 let word = "trigger";
 let userName = 'Default';
+let stoppedWordList = [];
 
 router.get("/download/:id", function (req, res) {
     console.log("/download Api is called");
     if (req.params.id) {
         var name = req.params.id + ".docx";
         var fileData = fs.readFileSync(process_dir + name);
+        console.log("/download Api  response sent");
         res.writeHead(200, {
             "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         });
         res.end(fileData);
     } else {
+        console.log("/download Api err response sent");
         res.status(400).json()
     }
 });
@@ -84,16 +87,20 @@ router.post("/upload", function (req, res) {
             }
             fs.writeFile(desPath, data, err => {
                 if (err) {
+                    console.log("/upload Api err response sent");
                     res.status(400).json({ message: err.message });
                 } else {
+                    console.log("/upload Api response sent");
                     res.status(200).json({ "message": "File is saved Successfully", "fileName": fileName });
                 }
             })
         } else {
+            console.log("/upload Api err response sent");
             res.status(400).json(new Error("Please send pdf or docx file only"));
         }
 
     } else {
+        console.log("/upload Api err response sent");
         res.status(400).json(new Error("Asset requires a File to be uploaded."));
     }
 });
@@ -121,13 +128,16 @@ router.post("/process", function (req, res) {
             }
 
             src = upload_DIR + extension + "/" + src;
-
+            if (req.body.stopWordListArray) {
+                stoppedWordList = req.body.stopWordListArray;
+            }
             if (extension == "pdf") {
                 args = `less -f ${extension} -t html5 -o test.txt`;
 
                 pdf2html.html(src, (err, html) => {
                     if (err) {
                         console.error('Conversion error: ' + err);
+                        console.log("/process Api err response sent");
                         res.status(400).json("Something Went Wrong! Processing Error");
                     } else {
                         processData(req, res, html, id, src_file_name);
@@ -139,7 +149,7 @@ router.post("/process", function (req, res) {
 
                 pandoc(src, args, (err, result) => {
                     if (err) {
-                        console.error(err);
+                        console.log("/process Api err response sent");
                         res.status(400).json("Something Went Wrong! Processing Error")
                     } else {
                         processData(req, res, result, id, src_file_name);
@@ -149,31 +159,39 @@ router.post("/process", function (req, res) {
 
 
         } else {
+            console.log("/process Api err response sent");
             res.status(400).json("Something Went Wrong! File Error")
         }
     } else {
+        console.log("/process Api err response sent");
         res.status(400).json("Something Went Wrong!")
     }
 })
 
 router.get("/getAnnotateData/:id", function (req, res) {
-    console.log("/process Api is called by: ", req.ip);
+    console.log("/getAnnotateData Api is called by: ", req.ip);
     if (req.params) {
         if (req.params.id) {
 
             let src_file_name = "json/" + req.params.id + ".txt";
             fs.readFile(src_file_name, 'utf8', function (err, data) {
                 // Display the file content
+                console.log("/getAnnotateData Api response sent");
                 res.status(200).send({ data: JSON.parse(data) });
             });
         } else {
+            console.log("/getAnnotateData Api err response sent");
             res.status(400).send("");
         }
     } else {
+        console.log("/getAnnotateData Api err response sent");
         res.status(400).send("");
     }
 })
 
+
+
+// List of Data where labelling of data will happen
 function processData(req, res, result, id, src_file_name) {
     let arrayList = [];
     let array = [];
@@ -206,9 +224,11 @@ function processData(req, res, result, id, src_file_name) {
                                     var re = /__/gi;
                                     i = i.replace(re, "");
                                 }
-
-                                if (trigger_word == "as") {
-                                    var d = new RegExp('\\b' + "as well" + '\\b', 'i');
+                                let matches;
+                                if (stoppedWordList.length) matches = stoppedWordList.filter(s => s.includes(trigger_word));
+                                if (matches) {
+                                    // if (trigger_word == "as") {
+                                    var d = new RegExp('\\b' + matches + '\\b', 'i');
                                     if (i.search(d) == -1) {
                                         if (upperCaseFlag) {
                                             trigger_word = trigger_word.split(' ')
