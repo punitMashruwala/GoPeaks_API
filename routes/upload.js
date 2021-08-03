@@ -15,7 +15,6 @@ const json_dir = "./json/"
 
 var default_trigger_list = [
     "accordingly",
-    "as",
     "as a consequence",
     "as a result",
     "because of",
@@ -38,6 +37,7 @@ var default_trigger_list = [
     "result from",
     "so",
     "therefore",
+    "as",
     "thus"
 ]
 let word = "trigger";
@@ -197,6 +197,8 @@ function processData(req, res, result, id, src_file_name) {
     let array = [];
     let fileName;
     let new_file_name;
+    console.log(stoppedWordList)
+
     async.series([
         function (cb) {
             array = result.split(".");
@@ -224,29 +226,20 @@ function processData(req, res, result, id, src_file_name) {
                                     var re = /__/gi;
                                     i = i.replace(re, "");
                                 }
-                                let matches;
-                                if (stoppedWordList.length) matches = stoppedWordList.filter(s => s.includes(trigger_word));
-                                if (matches) {
-                                    // if (trigger_word == "as") {
-                                    var d = new RegExp('\\b' + matches + '\\b', 'i');
-                                    if (i.search(d) == -1) {
-                                        if (upperCaseFlag) {
-                                            trigger_word = trigger_word.split(' ')
-                                                .map(w => w[0].toUpperCase() + w.substr(1).toLowerCase())
-                                                .join(' ')
-                                        }
-                                        i = i.replace(c, ` <font style="color:purple;"> &lt;${word}&gt ${trigger_word} &lt/${word}&gt </font>`)
-                                        i = '<font style="color:red;"> &lt;causal-relation&gt; </font> ' + i + ' <font style="color:red;"> &lt/causal-relation&gt </font>';
-                                        // i = '<font style="background-color:yellow;"> ' + i + " </font>";
-                                        if (i.indexOf("<p>") == -1) {
-                                            i = "<p> " + i + "</p> "
-                                        }
-                                        if (i.indexOf(word) != -1) {
-                                            array[index] = i;
-                                            arrayList.push(i);
-                                        }
+                                // let matches;
+                                // if (stoppedWordList.length) matches = stoppedWordList.filter(s => s.includes(trigger_word));
+
+                                // if (matches) {
+                                // if (trigger_word == "as") {
+                                let flag = false;
+                                stoppedWordList.map(match_word => {
+
+                                    var d = new RegExp('\\b' + match_word + '\\b', 'i');
+                                    if (i.search(d) != -1) {
+                                        flag = true;
                                     }
-                                } else {
+                                })
+                                if (!flag) {
                                     if (upperCaseFlag) {
                                         trigger_word = trigger_word.split(' ')
                                             .map(w => w[0].toUpperCase() + w.substr(1).toLowerCase())
@@ -263,6 +256,23 @@ function processData(req, res, result, id, src_file_name) {
                                         arrayList.push(i);
                                     }
                                 }
+                                // } else {
+                                //     if (upperCaseFlag) {
+                                //         trigger_word = trigger_word.split(' ')
+                                //             .map(w => w[0].toUpperCase() + w.substr(1).toLowerCase())
+                                //             .join(' ')
+                                //     }
+                                //     i = i.replace(c, ` <font style="color:purple;"> &lt;${word}&gt ${trigger_word} &lt/${word}&gt </font>`)
+                                //     i = '<font style="color:red;"> &lt;causal-relation&gt; </font> ' + i + ' <font style="color:red;"> &lt/causal-relation&gt </font>';
+                                //     // i = '<font style="background-color:yellow;"> ' + i + " </font>";
+                                //     if (i.indexOf("<p>") == -1) {
+                                //         i = "<p> " + i + "</p> "
+                                //     }
+                                //     if (i.indexOf(word) != -1) {
+                                //         array[index] = i;
+                                //         arrayList.push(i);
+                                //     }
+                                // }
                             }
 
                         } else if (i.indexOf("<p>") == -1) {
