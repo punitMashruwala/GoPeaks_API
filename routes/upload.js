@@ -195,6 +195,7 @@ router.get("/getAnnotateData/:id", function (req, res) {
 function processData(req, res, result, id, src_file_name) {
     let arrayList = [];
     let array = [];
+    let arrayLength;
     let fileName;
     let new_file_name;
     console.log(stoppedWordList)
@@ -202,6 +203,7 @@ function processData(req, res, result, id, src_file_name) {
     async.series([
         function (cb) {
             array = result.split(".");
+            arrayLength = array.length;
             console.log("Trigger words array :" + default_trigger_list)
             array.map((i, index) => {
                 let upperCaseFlag = false;
@@ -226,11 +228,6 @@ function processData(req, res, result, id, src_file_name) {
                                     var re = /__/gi;
                                     i = i.replace(re, "");
                                 }
-                                // let matches;
-                                // if (stoppedWordList.length) matches = stoppedWordList.filter(s => s.includes(trigger_word));
-
-                                // if (matches) {
-                                // if (trigger_word == "as") {
                                 let flag = false;
                                 stoppedWordList.map(match_word => {
 
@@ -256,23 +253,6 @@ function processData(req, res, result, id, src_file_name) {
                                         arrayList.push(i);
                                     }
                                 }
-                                // } else {
-                                //     if (upperCaseFlag) {
-                                //         trigger_word = trigger_word.split(' ')
-                                //             .map(w => w[0].toUpperCase() + w.substr(1).toLowerCase())
-                                //             .join(' ')
-                                //     }
-                                //     i = i.replace(c, ` <font style="color:purple;"> &lt;${word}&gt ${trigger_word} &lt/${word}&gt </font>`)
-                                //     i = '<font style="color:red;"> &lt;causal-relation&gt; </font> ' + i + ' <font style="color:red;"> &lt/causal-relation&gt </font>';
-                                //     // i = '<font style="background-color:yellow;"> ' + i + " </font>";
-                                //     if (i.indexOf("<p>") == -1) {
-                                //         i = "<p> " + i + "</p> "
-                                //     }
-                                //     if (i.indexOf(word) != -1) {
-                                //         array[index] = i;
-                                //         arrayList.push(i);
-                                //     }
-                                // }
                             }
 
                         } else if (i.indexOf("<p>") == -1) {
@@ -311,6 +291,7 @@ function processData(req, res, result, id, src_file_name) {
         function (cb) {
             if (req.body.editable) {
                 if (arrayList.length > 0) {
+                    arrayList.push(arrayLength);
                     new_file_name = `${json_dir}${src_file_name}_${userName}_${id}.txt`;
 
                     fs.writeFile(new_file_name, JSON.stringify(arrayList), function (err) {
