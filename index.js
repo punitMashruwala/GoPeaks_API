@@ -7,7 +7,7 @@ import fileupload from 'express-fileupload';
 import cors from "cors";
 const app = express();
 app.use(cors());
-const PORT = 10010;
+const PORT = process.env.PORT || 10010;
 
 app.use(express.json());
 app.use(express.urlencoded({
