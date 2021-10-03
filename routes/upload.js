@@ -44,6 +44,10 @@ let word = "trigger";
 let userName = 'Default';
 let stoppedWordList = [];
 
+router.get("/", function (req, res) {
+    res.status(200).json({ "message": "API is up!" });
+})
+
 router.get("/download/:id", function (req, res) {
     console.log("/download Api is called");
     if (req.params.id) {
