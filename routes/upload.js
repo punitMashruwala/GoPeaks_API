@@ -91,7 +91,7 @@ router.post("/upload", function (req, res) {
             }
             fs.writeFile(desPath, data, err => {
                 if (err) {
-                    console.log("/upload Api err response sent");
+                    console.log("/upload Api err response sent: ", err);
                     res.status(400).json({ message: err.message });
                 } else {
                     console.log("/upload Api response sent");
@@ -99,12 +99,12 @@ router.post("/upload", function (req, res) {
                 }
             })
         } else {
-            console.log("/upload Api err response sent");
+            console.log("/upload Api err response sent: Extension error");
             res.status(400).json(new Error("Please send pdf or docx file only"));
         }
 
     } else {
-        console.log("/upload Api err response sent");
+        console.log("/upload Api err response sent , No file found");
         res.status(400).json(new Error("Asset requires a File to be uploaded."));
     }
 });
@@ -153,7 +153,7 @@ router.post("/process", function (req, res) {
 
                 pandoc(src, args, (err, result) => {
                     if (err) {
-                        console.log("/process Api err response sent");
+                        console.log("/process Api err response sent: ", err);
                         res.status(400).json("Something Went Wrong! Processing Error")
                     } else {
                         processData(req, res, result, id, src_file_name);
@@ -163,11 +163,11 @@ router.post("/process", function (req, res) {
 
 
         } else {
-            console.log("/process Api err response sent");
+            console.log("/process Api err response sent: File name error");
             res.status(400).json("Something Went Wrong! File Error")
         }
     } else {
-        console.log("/process Api err response sent");
+        console.log("/process Api err response sent: No body found");
         res.status(400).json("Something Went Wrong!")
     }
 })
@@ -184,11 +184,11 @@ router.get("/getAnnotateData/:id", function (req, res) {
                 res.status(200).send({ data: JSON.parse(data) });
             });
         } else {
-            console.log("/getAnnotateData Api err response sent");
+            console.log("/getAnnotateData Api err response sent: No id");
             res.status(400).send("");
         }
     } else {
-        console.log("/getAnnotateData Api err response sent");
+        console.log("/getAnnotateData Api err response sent: No params");
         res.status(400).send("");
     }
 })
@@ -318,6 +318,7 @@ function processData(req, res, result, id, src_file_name) {
     ], function (err) {
         // return result;
         if (err) {
+            console.log("Error: ", err)
             if (err == "Error! No Data") {
                 res.status(400).json("!!!No data found!!!");
             } else {
