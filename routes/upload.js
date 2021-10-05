@@ -81,7 +81,7 @@ router.post("/upload", function (req, res) {
             if (!fs.existsSync(dir)) {
                 fs.mkdirSync(dir);
             }
-            let fileName = temp[0] + "_" + id + "." + extension;
+            let fileName = temp[0].replace(/\s/g, '') + "_" + id + "." + extension;
             var desPath = dir + "/" + fileName;
             let data;
             if (file.buffer) {
